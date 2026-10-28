@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datacrédito Experian - Portal del Cliente</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); font-family: Arial, sans-serif; min-height: 100vh; }
+.header { background: white; padding: 15px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 40px; height: 40px; background: #1e3c72; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+.header-user-area { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.header-username { font-size: 13px; font-weight: 600; color: #1e3c72; }
+.btn-logout { padding: 10px 25px; background: #dc3545; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.login-container { max-width: 450px; margin: 80px auto; background: white; border-radius: 20px; padding: 50px 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+.login-title { text-align: center; color: #1e3c72; font-size: 28px; margin-bottom: 10px; }
+.login-subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 35px; }
+.form-group { margin-bottom: 25px; }
+.form-group label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+.form-group input { width: 100%; padding: 14px 18px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; }
+.form-group input:focus { outline: none; border-color: #1e3c72; }
+.btn-login { width: 100%; padding: 15px; background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.help-text { text-align: center; margin-top: 20px; font-size: 13px; color: #666; }
+#loadingScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; }
+#loadingScreen.active { display: flex; }
+.loading-card { background: white; border-radius: 24px; padding: 50px 60px; text-align: center; width: 90%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.loading-logo { display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+.loading-spinner-wrap { margin-bottom: 25px; }
+.loading-spinner-wrap svg { animation: spin 1.5s linear infinite; width: 64px; height: 64px; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.loading-title { font-size: 18px; font-weight: 700; color: #1e3c72; margin-bottom: 6px; }
+.loading-subtitle { font-size: 13px; color: #999; margin-bottom: 28px; }
+.progress-bar-container { background: #f0f0f0; border-radius: 50px; height: 14px; width: 100%; overflow: hidden; margin-bottom: 10px; }
+.progress-bar-fill { height: 100%; width: 0%; border-radius: 50px; background: linear-gradient(90deg, #1e3c72, #ff8c42); transition: width 0.12s ease; position: relative; overflow: hidden; }
+.progress-bar-fill::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: rgba(255,255,255,0.3); animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { left: -60%; } 100% { left: 140%; } }
+.progress-percent { font-size: 28px; font-weight: 800; color: #1e3c72; margin-top: 14px; letter-spacing: -1px; }
+.loading-status { font-size: 13px; color: #888; margin-top: 6px; min-height: 20px; font-style: italic; }
+.dashboard { display: none; padding: 30px; max-width: 1200px; margin: 0 auto; }
+.welcome-section { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+.welcome-title { font-size: 28px; color: #1e3c72; margin-bottom: 10px; }
+.score-container { display: flex; gap: 30px; align-items: center; margin-top: 30px; }
+.score-circle { position: relative; width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#ff8c42 0deg, #ffd700 90deg, #4CAF50 180deg, transparent 180deg); display: flex; align-items: center; justify-content: center; }
+.score-inner { width: 170px; height: 170px; background: #2c3e50; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.score-number { font-size: 64px; font-weight: bold; color: white; }
+.score-range { display: flex; justify-content: space-between; width: 100px; font-size: 12px; color: white; margin-top: 10px; }
+.score-info { flex: 1; }
+.score-status { display: inline-block; padding: 8px 20px; background: #4CAF50; color: white; border-radius: 20px; font-weight: 600; font-size: 14px; margin-bottom: 15px; }
+.btn-download { padding: 12px 30px; background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%); color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; }
+.credit-history-section { background: #f8f9fa; padding: 30px; border-radius: 15px; margin-top: 30px; }
+.credit-history-title { font-size: 28px; color: #2c3e50; margin-bottom: 20px; font-weight: bold; }
+.credit-history-description { color: #666; line-height: 1.8; margin-bottom: 25px; font-size: 15px; }
+.law-reference { color: #666; line-height: 1.8; margin-bottom: 30px; font-size: 15px; }
+.law-reference strong { color: #2c3e50; }
+.account-card { background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 25px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between; }
+.account-card:hover { border-color: #1e3c72; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.account-card-left { display: flex; align-items: center; gap: 20px; }
+.account-icon { width: 50px; height: 50px; background: #e8f0fe; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.account-info h3 { font-size: 20px; color: #2c3e50; margin-bottom: 5px; }
+.account-info p { color: #999; font-size: 14px; }
+.account-arrow { font-size: 24px; color: #999; }
+.account-details { display: none; background: #f8f9fa; padding: 25px; border-radius: 10px; margin-top: 15px; }
+.account-details.active { display: block; }
+.detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0e0e0; }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { color: #666; font-size: 14px; }
+.detail-value { color: #2c3e50; font-weight: 600; font-size: 14px; }
+.hidden { display: none; }
+@media (max-width: 768px) {
+    .dashboard { padding: 15px; } .welcome-section { padding: 20px; } .score-container { flex-direction: column; }
+    .credit-history-section { padding: 20px; } .account-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .account-arrow { align-self: flex-end; } .loading-card { padding: 40px 30px; }
+    .paz-salvo-header { flex-wrap: wrap; } .paz-salvo-badge { margin-left: 0; }
+}
+.paz-salvo-box { background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%); border: 2px solid #c7d8fc; border-radius: 16px; padding: 30px; margin-top: 25px; }
+.paz-salvo-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+.paz-salvo-icon-wrap { width: 50px; height: 50px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(30,60,114,0.15); flex-shrink: 0; }
+.paz-salvo-title { font-size: 17px; font-weight: 700; color: #1e3c72; margin-bottom: 3px; }
+.paz-salvo-subtitle { font-size: 13px; color: #6b7a99; }
+.paz-salvo-badge { margin-left: auto; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; background: #fff3cd; color: #856404; border: 1px solid #ffc107; white-space: nowrap; flex-shrink: 0; transition: all 0.5s ease; }
+.paz-salvo-badge.done { background: #d4edda; color: #155724; border-color: #28a745; }
+.paz-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
+.paz-step { display: flex; align-items: center; gap: 12px; font-size: 14px; color: #6b7a99; transition: color 0.4s ease; }
+.paz-step.active-step { color: #1e3c72; font-weight: 600; }
+.paz-step.done-step { color: #28a745; }
+.paz-step-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; transition: all 0.5s ease; background: #d0d9f0; }
+.paz-step-dot.running { background: #ff8c42; box-shadow: 0 0 0 4px rgba(255,140,66,0.25); animation: pulse-dot 1s infinite; }
+.paz-step-dot.completed { background: #28a745; }
+@keyframes pulse-dot { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+.paz-bar-wrap { margin-bottom: 15px; }
+.paz-bar-track { background: #d0d9f0; border-radius: 50px; height: 18px; overflow: hidden; margin-bottom: 10px; position: relative; }
+.paz-bar-fill { height: 100%; width: 0%; border-radius: 50px; background: linear-gradient(90deg, #1e3c72 0%, #2a5298 60%, #4CAF50 100%); transition: width 0.6s ease; position: relative; overflow: hidden; }
+.paz-bar-labels { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.paz-percent { font-size: 30px; font-weight: 800; color: #1e3c72; letter-spacing: -1px; transition: all 0.3s ease; }
+.paz-eta-txt { font-size: 13px; color: #888; font-style: italic; }
+.paz-bar-fill::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: rgba(255,255,255,0.25); animation: paz-shimmer 2.5s infinite; }
+@keyframes paz-shimmer { 0% { left: -50%; } 100% { left: 150%; } }
+.paz-status-msg { font-size: 14px; color: #5a6a8a; padding: 12px 18px; background: white; border-radius: 10px; border-left: 4px solid #1e3c72; line-height: 1.5; min-height: 46px; transition: border-color 0.5s ease; }
+.paz-status-msg.done-msg { border-left-color: #28a745; color: #155724; }
+.centrales-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid #dde4f0; }
+.centrales-title { font-size: 12px; font-weight: 700; color: #1e3c72; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+.centrales-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.central-card { flex: 1 1 calc(50% - 8px); min-width: 80px; background: white; border: 1.5px solid #dde4f0; border-radius: 10px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: border-color 0.4s, box-shadow 0.4s; }
+.central-card.done { border-color: #28a745; box-shadow: 0 0 0 3px rgba(40,167,69,0.12); }
+.central-logo { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 30px; }
+.cifin-text { font-size: 15px; font-weight: 900; color: #003087; letter-spacing: 1px; line-height: 1.1; }
+.cifin-sub { font-size: 9px; color: #e5002b; font-weight: 700; }
+.tu-text { font-size: 12px; font-weight: 900; color: #4AB3E8; letter-spacing: 0.5px; }
+.midc-text { font-size: 12px; font-weight: 900; color: #6B3FA0; letter-spacing: 0.3px; }
+.central-status { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #999; font-style: italic; transition: color 0.4s; }
+.central-card.done .central-status { color: #28a745; font-style: normal; font-weight: 700; }
+.central-dot-anim { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; transition: background 0.4s; }
+.central-card.done .central-dot-anim { background: #28a745; }
+.central-dot-anim.running { background: #ff8c42; animation: pulse-dot 1s infinite; }
+.bank-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.bank-list-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f0f4ff; border-radius: 8px; border-left: 3px solid #1e3c72; }
+.bank-icon { font-size: 18px; }
+.bank-name { flex: 1; font-size: 14px; font-weight: 600; color: #1e3c72; }
+.bank-date { font-size: 13px; font-weight: 600; color: #ff8c42; background: #fff4ec; padding: 3px 10px; border-radius: 20px; border: 1px solid #ffd0a8; }
+@media print {
+    #pazSalvoBox, .centrales-section, .btn-download, .btn-logout, #btnLogout { display: none !important; }
+}
+
+/* ===== REGISTRO / CAMBIAR CONTRASEÑA ===== */
+.login-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+.login-link {
+    color: #1e3c72;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1.5px solid #1e3c72;
+    transition: background 0.2s, color 0.2s;
+    width: 100%;
+    text-align: center;
+}
+.login-link:hover { background: #1e3c72; color: white; }
+.error-box {
+    background: #fde8e8;
+    color: #b91c1c;
+    border: 1.5px solid #f87171;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    line-height: 1.5;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">
+        <svg width="145" height="48" viewBox="0 0 145 48" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="12" height="12" rx="2.5" fill="#6B3FA0"/>
+          <rect x="14" y="0" width="12" height="12" rx="2.5" fill="#1E6BB0"/>
+          <rect x="28" y="0" width="12" height="12" rx="2.5" fill="#1E6BB0"/>
+          <rect x="0" y="14" width="12" height="12" rx="2.5" fill="#E0007A"/>
+          <rect x="14" y="14" width="12" height="12" rx="2.5" fill="#E0007A"/>
+          <rect x="0" y="28" width="12" height="12" rx="2.5" fill="#E0007A"/>
+          <text x="44" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E6BB0">datacrédito</text>
+          <text x="44" y="37" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E6BB0">experian&#174;</text>
+        </svg>
+    </div>
+    <div class="header-user-area">
+        <span id="headerUserName" class="header-username"></span>
+        <button class="btn-logout hidden" id="btnLogout" onclick="handleLogout()">Cerrar Sesión</button>
+    </div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-container" id="loginScreen">
+    <h1 class="login-title">Bienvenido</h1>
+    <p class="login-subtitle">Ingresa tus datos para consultar tu historial crediticio</p>
+    <div class="form-group">
+        <label>Número de Cédula</label>
+        <input type="text" id="cedula" placeholder="Ingresa tu número de cédula">
+    </div>
+    <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="codigo" placeholder="Ingresa tu contraseña">
+    </div>
+    <button class="btn-login" onclick="handleLogin()">Conocer MI PUNTAJE</button>
+    <p class="help-text">¿No tienes contraseña? Contacta con tu asesor</p>
+    <div class="login-links">
+        <a href="#" class="login-link" onclick="showScreen('registerScreen')">📝 Crear usuario</a>
+        <a href="#" class="login-link" onclick="showScreen('forgotScreen')">🔑 Cambiar contraseña</a>
+    </div>
+</div>
+
+<!-- REGISTRO -->
+<div class="login-container hidden" id="registerScreen">
+    <h1 class="login-title">Crear cuenta</h1>
+    <p class="login-subtitle">Completa tus datos para registrarte</p>
+    <div class="form-group">
+        <label>Nombre(s)</label>
+        <input type="text" id="reg_nombre" placeholder="Ingresa tu nombre">
+    </div>
+    <div class="form-group">
+        <label>Apellidos</label>
+        <input type="text" id="reg_apellidos" placeholder="Ingresa tus apellidos">
+    </div>
+    <div class="form-group">
+        <label>Número de Cédula</label>
+        <input type="text" id="reg_cedula" placeholder="Ingresa tu número de cédula">
+    </div>
+    <div class="form-group">
+        <label>Fecha de Nacimiento</label>
+        <input type="date" id="reg_fecha">
+    </div>
+    <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="email" id="reg_correo" placeholder="ejemplo@correo.com">
+    </div>
+    <div class="form-group">
+        <label>Número de Teléfono</label>
+        <input type="tel" id="reg_telefono" placeholder="Ingresa tu número de teléfono">
+    </div>
+    <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg_password" placeholder="Crea una contraseña">
+    </div>
+    <div class="form-group">
+        <label>Confirmar Contraseña</label>
+        <input type="password" id="reg_password2" placeholder="Repite tu contraseña">
+    </div>
+    <button class="btn-login" onclick="handleRegister()">Registrarme</button>
+    <div class="login-links">
+        <a href="#" class="login-link" onclick="showScreen('loginScreen')">← Volver al inicio de sesión</a>
+    </div>
+</div>
+
+<!-- CAMBIAR CONTRASEÑA -->
+<div class="login-container hidden" id="forgotScreen">
+    <h1 class="login-title">Cambiar contraseña</h1>
+    <p class="login-subtitle">Ingresa tu cédula para identificarte</p>
+    <div id="forgot_error" class="error-box hidden">
+        ❌ No encontramos ninguna cuenta con ese número de cédula. Verifica el número e intenta de nuevo.
+    </div>
+    <div class="form-group">
+        <label>Número de Cédula</label>
+        <input type="text" id="forgot_cedula" placeholder="Ingresa tu número de cédula" oninput="hideForgotError()">
+    </div>
+    <div id="forgot_newpass_wrap" class="hidden">
+        <div class="form-group">
+            <label>Nueva contraseña</label>
+            <input type="password" id="new_password" placeholder="Ingresa tu nueva contraseña">
+        </div>
+        <div class="form-group">
+            <label>Confirmar contraseña</label>
+            <input type="password" id="new_password2" placeholder="Repite la contraseña">
+        </div>
+    </div>
+    <button class="btn-login" id="btnForgotAction" onclick="handleForgot()">Continuar</button>
+    <div class="login-links">
+        <a href="#" class="login-link" onclick="showScreen('loginScreen')">← Volver al inicio de sesión</a>
+    </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+    <div class="loading-card">
+        <div class="loading-logo">
+            <svg width="145" height="48" viewBox="0 0 145 48" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="12" height="12" rx="2.5" fill="#6B3FA0"/>
+              <rect x="14" y="0" width="12" height="12" rx="2.5" fill="#1E6BB0"/>
+              <rect x="28" y="0" width="12" height="12" rx="2.5" fill="#1E6BB0"/>
+              <rect x="0" y="14" width="12" height="12" rx="2.5" fill="#E0007A"/>
+              <rect x="14" y="14" width="12" height="12" rx="2.5" fill="#E0007A"/>
+              <rect x="0" y="28" width="12" height="12" rx="2.5" fill="#E0007A"/>
+              <text x="44" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E6BB0">datacrédito</text>
+              <text x="44" y="37" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E6BB0">experian&#174;</text>
+            </svg>
+        </div>
+        <div class="loading-spinner-wrap">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="25" r="20" stroke="#e8f0fe" stroke-width="5"/>
+                <path d="M25 5 A20 20 0 0 1 45 25" stroke="#1e3c72" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="loading-title">Cargando tu información</div>
+        <div class="loading-subtitle">Consultando Datacrédito Experian de forma segura...</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-percent" id="progressPercent">0%</div>
+        <div class="loading-status" id="loadingStatus">Iniciando conexión segura...</div>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+    <div class="welcome-section">
+        <h1 class="welcome-title"><span id="userName"></span>, conoce tu historia de crédito</h1>
+        <p style="color: #666; font-size: 15px;">Aquí encontrarás tu puntaje en DATACRÉDITO EXPERIAN</p>
+        <div class="score-container">
+            <div class="score-circle">
+                <div class="score-inner">
+                    <div class="score-number" id="scoreNumber">?</div>
+                    <div class="score-range"><span>150</span><span>950</span></div>
+                </div>
+            </div>
+            <div class="score-info">
+                <span class="score-status" id="scoreStatus">Buen Perfil</span>
+                <p id="scoreDescription" style="color: #555; line-height: 1.6; margin-bottom: 20px;">Tu puntaje indica un buen historial crediticio.</p>
+                <button class="btn-download" onclick="handleDownload()">Descargar Reporte PDF</button>
+            </div>
+        </div>
+        <div class="credit-history-section">
+            <h2 class="credit-history-title">Historia de crédito</h2>
+            <p class="credit-history-description">Tu historia de crédito se construye con los reportes <strong>positivos y negativos</strong> realizados por las entidades ante Datacrédito Experian.</p>
+            <p class="law-reference">Según el <strong>Artículo 14</strong> de la <strong>Ley 1266</strong> de 2008, los reportes son positivos cuando estás al día en tus obligaciones y son negativos cuando te encuentras en mora en tus cuotas u obligaciones.</p>
+
+            <div class="account-card" onclick="toggleDetails('openAccounts')">
+                <div class="account-card-left">
+                    <div class="account-icon">📂</div>
+                    <div class="account-info"><h3>2 Cuentas abiertas</h3><p>Tus productos activos</p></div>
+                </div>
+                <div class="account-arrow">›</div>
+            </div>
+            <div id="openAccounts" class="account-details">
+                <div class="detail-row"><span class="detail-label">Total de cuentas activas:</span><span class="detail-value">2</span></div>
+                <div class="bank-list">
+                    <div class="bank-list-item">
+                        <span class="bank-icon">🏦</span>
+                        <span class="bank-name">Bancolombia</span>
+                        <span class="bank-date">28 FEB 2026</span>
+                    </div>
+                    <div class="bank-list-item">
+                        <span class="bank-icon">🏦</span>
+                        <span class="bank-name">Banco de Bogotá</span>
+                        <span class="bank-date">28 FEB 2026</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="account-card" onclick="toggleDetails('closedAccounts')">
+                <div class="account-card-left">
+                    <div class="account-icon">📋</div>
+                    <div class="account-info"><h3>0 Cuentas cerradas</h3><p>Productos cerrados o cancelados</p></div>
+                </div>
+                <div class="account-arrow">›</div>
+            </div>
+            <div id="closedAccounts" class="account-details">
+                <div class="detail-row"><span class="detail-label">Total de cuentas cerradas:</span><span class="detail-value">0</span></div>
+                <div class="detail-row"><span class="detail-label">Créditos pagados:</span><span class="detail-value">0</span></div>
+                <div class="detail-row"><span class="detail-label">Tarjetas canceladas:</span><span class="detail-value">0</span></div>
+            </div>
+
+            <div class="account-card" onclick="toggleDetails('latePayments')">
+                <div class="account-card-left">
+                    <div class="account-icon">⚠️</div>
+                    <div class="account-info"><h3>0 Pagos atrasados</h3><p>Obligaciones en mora</p></div>
+                </div>
+                <div class="account-arrow">›</div>
+            </div>
+            <div id="latePayments" class="account-details">
+                <div class="detail-row"><span class="detail-label">Pagos con retraso:</span><span class="detail-value">0</span></div>
+                <div class="detail-row"><span class="detail-label">Días de mora promedio:</span><span class="detail-value">0 días</span></div>
+                <div class="detail-row"><span class="detail-label">Monto en mora:</span><span class="detail-value">$0</span></div>
+            </div>
+
+            <div class="account-card" onclick="toggleDetails('creditInquiries')">
+                <div class="account-card-left">
+                    <div class="account-icon">🔍</div>
+                    <div class="account-info"><h3>0 Consultas de crédito</h3><p>Solicitudes realizadas</p></div>
+                </div>
+                <div class="account-arrow">›</div>
+            </div>
+            <div id="creditInquiries" class="account-details">
+                <div class="detail-row"><span class="detail-label">Consultas últimos 6 meses:</span><span class="detail-value">0</span></div>
+                <div class="detail-row"><span class="detail-label">Consultas últimos 12 meses:</span><span class="detail-value">0</span></div>
+                <div class="detail-row"><span class="detail-label">Última consulta:</span><span class="detail-value">N/A</span></div>
+            </div>
+
+            <div class="paz-salvo-box" id="pazSalvoBox">
+                <div class="paz-salvo-header">
+                    <div class="paz-salvo-icon-wrap">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="#1e3c72" stroke-width="2"/>
+                            <path d="M12 6v6l4 2" stroke="#1e3c72" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="paz-salvo-title">Cargando información correctamente</div>
+                        <div class="paz-salvo-subtitle">Procesando datos para generar Certificado de Acreditación</div>
+                    </div>
+                    <div class="paz-salvo-badge" id="pazSalvoBadge">EN PROCESO</div>
+                </div>
+                <div class="paz-steps" id="pazSteps">
+                    <div class="paz-step" id="step1"><div class="paz-step-dot"></div><span>Verificando obligaciones financieras</span></div>
+                    <div class="paz-step" id="step2"><div class="paz-step-dot"></div><span>Consultando entidades reportantes</span></div>
+                    <div class="paz-step" id="step3"><div class="paz-step-dot"></div><span>Validando historial de pagos</span></div>
+                    <div class="paz-step" id="step4"><div class="paz-step-dot"></div><span>Cruzando información con bases de datos</span></div>
+                    <div class="paz-step" id="step5"><div class="paz-step-dot"></div><span>Generando Certificado de Acreditación</span></div>
+                </div>
+                <div class="centrales-section">
+                    <p class="centrales-title">Cargando información en centrales de riesgo:</p>
+                    <div class="centrales-grid">
+                        <div class="central-card" id="centralDC">
+                            <div class="central-logo dc">
+                                <svg width="90" height="30" viewBox="0 0 90 30" xmlns="http://www.w3.org/2000/svg">
+                                  <rect x="0" y="0" width="7" height="7" rx="1.5" fill="#6B3FA0"/>
+                                  <rect x="8.5" y="0" width="7" height="7" rx="1.5" fill="#1E6BB0"/>
+                                  <rect x="17" y="0" width="7" height="7" rx="1.5" fill="#1E6BB0"/>
+                                  <rect x="0" y="8.5" width="7" height="7" rx="1.5" fill="#E0007A"/>
+                                  <rect x="8.5" y="8.5" width="7" height="7" rx="1.5" fill="#E0007A"/>
+                                  <rect x="0" y="17" width="7" height="7" rx="1.5" fill="#E0007A"/>
+                                  <text x="26" y="12" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="#1E6BB0">datacrédito</text>
+                                  <text x="26" y="23" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="#1E6BB0">experian®</text>
+                                </svg>
+                            </div>
+                            <div class="central-status"><div class="central-dot-anim"></div><span>Cargando...</span></div>
+                        </div>
+                        <div class="central-card" id="centralMiDC">
+                            <div class="central-logo midc"><span class="midc-text">midatacrédito</span></div>
+                            <div class="central-status"><div class="central-dot-anim"></div><span>Cargando...</span></div>
+                        </div>
+                        <div class="central-card" id="centralCifin">
+                            <div class="central-logo cifin"><span class="cifin-text">CIFIN</span><span class="cifin-sub">TransUnion</span></div>
+                            <div class="central-status"><div class="central-dot-anim"></div><span>Cargando...</span></div>
+                        </div>
+                        <div class="central-card" id="centralTU">
+                            <div class="central-logo tu"><span class="tu-text">TransUnion</span></div>
+                            <div class="central-status"><div class="central-dot-anim"></div><span>Cargando...</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="paz-bar-wrap">
+                    <div class="paz-bar-track"><div class="paz-bar-fill" id="pazBarFill"></div></div>
+                    <div class="paz-bar-labels">
+                        <span class="paz-percent" id="pazPercent">0%</span>
+                        <span class="paz-eta-txt">Cargando informacion...</span>
+                    </div>
+                </div>
+                <div class="paz-status-msg" id="pazStatusMsg">🔄 Iniciando proceso de actualización...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== BASE DE DATOS DE CLIENTES =====
+var clientsDB = {
+    '72012342': { codigo: '72012342', nombre: 'ALVARO DE JESUS ESTRADA',              score: 897 },
+    '71736042': { codigo: '71736042', nombre: 'Luis Fernando Ramirez Ramirez',          score: 897 },
+    '94540406':   { codigo: '94540406',   nombre: 'Hugo Andres Caicedo Rojas',       score: 897 },
+    '80459279':   { codigo: '80459279',   nombre: 'Jhon Ronal Beltran Mahecha',           score: 897 },
+    '35533342':   { codigo: '35533342',   nombre: 'Martha Yaneth Peña Garcia',          score: 897 },
+    '11229934':   { codigo: '11229934',   nombre: 'Jaime Andres Leal Gemade',          score: 897 },
+    '13742466':   { codigo: '13742466',   nombre: 'Elkin Edgardo Mendoza Garcia',                  score: 897 },
+    '72198681':   { codigo: '72198681',   nombre: 'Juan Carlos Yepes Hernandez', score: 897 },
+    '1052975322': { codigo: '1052975322', nombre: 'Carlos Miguel Martinez Polanco',     score: 897 },
+    '80399921':   { codigo: '80399921',   nombre: 'Hector Armando Sanchez Larrota',                    score: 897 },
+    '98594852': { codigo: '98594852', nombre: 'Juan Carlos Toro Valencia',         score: 897 },
+    '78023423':   { codigo: '78023423',   nombre: 'Elias Jose Rodriguez Rubio',                score: 897 },
+    '3142968':   { codigo: '3142968',        nombre: 'Gilberto Amaya Amaya',                       score: 897 },
+    '1036645586': { codigo: '1036645586',       nombre: 'Jaime Enrique Gallego Perez',       score: 897 },
+    '42150519': { codigo: '42150519',       nombre: 'Luz Marina Londoño Loaiza',        score: 897 },
+    '73508180': { codigo: '73508180',       nombre: 'Hernando Luis Julio Perez',         score: 897 },
+    '52082032': { codigo: '52082032',       nombre: 'Rosario Del Socorro Sanin Pombo',      score: 897 },
+    '91288798': { codigo: '91288798',       nombre: 'Jorge Alberto Medina Tarazona',          score: 897 },
+    '79533198':   { codigo: '79533198',       nombre: 'Adolfo Felipe Valenzuela Ortiz', score: 889 },
+    '15511478': { codigo: '15511478', nombre: 'Danilo de Jesus Gomez Hernandez',          score: 897 },
+    '73140808':    { codigo: '73140808',    nombre: 'Edwin Alex Muñoz Garcia',         score: 897 },
+    '63451582':   { codigo: '63451582',   nombre: 'Maria Angelica Rodriguez Vargas',            score: 897 },
+    '1079658977':   { codigo: '1079658977',   nombre: 'Linnei Mayerlin Gutierrez Torrijos',        score: 897 },
+    '19955630':    { codigo: '19955630',    nombre: 'Jorge Luis Sarmiento Navarro',             score: 867 },
+    '79916808': { codigo: '79916808', nombre: 'Luis Eduardo Beltran Tovar',            score: 867 },
+    '73432667':   { codigo: '73432667',   nombre: 'Jorge Mario Vasquez Teheran',       score: 867 }
+};
+
+var currentUser = null;
+
+var loadingMessages = [
+    'Iniciando conexión segura...','Verificando identidad...','Consultando central de riesgos...',
+    'Procesando historial crediticio...','Calculando puntaje...','Analizando cuentas activas...',
+    'Revisando obligaciones...','Generando reporte personalizado...','Aplicando cifrado de datos...','Finalizando consulta...'
+];
+
+function handleLogin() {
+    var cedula = document.getElementById('cedula').value.trim();
+    var codigo = document.getElementById('codigo').value.trim();
+    if (!cedula || !codigo) { alert('Por favor ingresa tu cédula y contraseña'); return; }
+    var client = clientsDB[cedula];
+    if (!client) { alert('Cédula no encontrada'); return; }
+    if (client.codigo !== codigo) { alert('Contraseña incorrecta'); return; }
+    if (client.loggedIn) { alert('Este usuario ya tiene una sesión activa. Por favor contacta a tu asesor.'); return; }
+    client.loggedIn = true;
+    currentUser = client;
+    startLoading();
+}
+
+function startLoading() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    var loadingScreen = document.getElementById('loadingScreen');
+    loadingScreen.classList.add('active');
+    var percent = 0;
+    var fill = document.getElementById('progressFill');
+    var percentText = document.getElementById('progressPercent');
+    var statusText = document.getElementById('loadingStatus');
+    function step() {
+        if (percent >= 100) {
+            percentText.textContent = '100%'; fill.style.width = '100%';
+            statusText.textContent = '✅ ¡Información lista!';
+            setTimeout(function() { loadingScreen.classList.remove('active'); showDashboard(); }, 600);
+            return;
+        }
+        percent++;
+        fill.style.width = percent + '%';
+        percentText.textContent = percent + '%';
+        statusText.textContent = loadingMessages[Math.min(Math.floor(percent / 10), loadingMessages.length - 1)];
+        var delay;
+        if (percent < 10) delay = Math.floor(Math.random() * 60) + 80;
+        else if (percent < 30) delay = Math.floor(Math.random() * 40) + 50;
+        else if (percent < 70) delay = Math.floor(Math.random() * 30) + 40;
+        else if (percent < 90) delay = Math.floor(Math.random() * 50) + 60;
+        else delay = Math.floor(Math.random() * 80) + 100;
+        setTimeout(step, delay);
+    }
+    step();
+}
+
+function showDashboard() {
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('btnLogout').classList.remove('hidden');
+    document.getElementById('userName').textContent = currentUser.nombre;
+    document.getElementById('headerUserName').textContent = 'Hola ' + currentUser.nombre.split(' ')[0];
+    document.getElementById('scoreNumber').textContent = currentUser.score;
+    var status, description;
+    if (currentUser.score >= 750) {
+        status = 'Excelente Perfil';
+        description = 'Tu puntaje es excelente. Tienes acceso a las mejores tasas de crédito y condiciones preferenciales.';
+    } else if (currentUser.score >= 650) {
+        status = 'Buen Perfil'; description = 'Tu puntaje es bueno. Mantén tus pagos al día para seguir mejorando.';
+    } else {
+        status = 'Perfil Regular'; description = 'Tu puntaje puede mejorar. Te recomendamos mantener tus obligaciones al día.';
+    }
+    document.getElementById('scoreStatus').textContent = status;
+    document.getElementById('scoreDescription').textContent = description;
+    startPazSalvoBar();
+}
+
+var pazTimer = null;
+var pazMessages = [
+    'Iniciando proceso de actualizacion...','Verificando obligaciones financieras activas...',
+    'Consultando entidades financieras reportantes...','Validando historial de pagos registrado...',
+    'Cruzando informacion con bases de datos nacionales...','Procesando datos de credito y mora...',
+    'Analizando comportamiento de pago historico...','Aplicando protocolos de seguridad...',
+    'Consolidando informacion para el certificado...','Generando Certificado de Acreditación... casi listo...'
+];
+
+function setCentral(id, state, text) {
+    var card = document.getElementById(id);
+    if (!card) return;
+    var dot = card.querySelector('.central-dot-anim');
+    var span = card.querySelector('.central-status span');
+    if (state === 'running') {
+        card.classList.remove('done');
+        if (dot) dot.className = 'central-dot-anim running';
+        if (span) span.textContent = text || 'Procesando...';
+    } else if (state === 'done') {
+        card.classList.add('done');
+        if (dot) dot.className = 'central-dot-anim';
+        if (span) span.textContent = '✓ Verificado';
+    } else {
+        card.classList.remove('done');
+        if (dot) dot.className = 'central-dot-anim';
+        if (span) span.textContent = text || 'En espera...';
+    }
+}
+
+function startPazSalvoBar() {
+    if (pazTimer) clearInterval(pazTimer);
+    var percent = 0;
+    var fill = document.getElementById('pazBarFill');
+    var statusMsg = document.getElementById('pazStatusMsg');
+    var badge = document.getElementById('pazSalvoBadge');
+    for (var i = 1; i <= 5; i++) {
+        var dot = document.querySelector('#step' + i + ' .paz-step-dot');
+        var stepEl = document.getElementById('step' + i);
+        if (dot) dot.className = 'paz-step-dot';
+        if (stepEl) stepEl.className = 'paz-step';
+    }
+    fill.style.width = '0%';
+    var pReset = document.getElementById('pazPercent');
+    if (pReset) pReset.textContent = '0%';
+    badge.textContent = 'EN PROCESO'; badge.classList.remove('done');
+    statusMsg.classList.remove('done-msg'); statusMsg.textContent = pazMessages[0];
+    ['centralDC','centralMiDC','centralCifin','centralTU'].forEach(function(id) {
+        setCentral(id, 'wait', 'Cargando...');
+    });
+
+    function pazStep() {
+        if (percent >= 100) {
+            fill.style.width = '100%';
+            document.getElementById('pazPercent').textContent = '100%';
+            badge.textContent = 'LISTO PARA ACTUALIZAR'; badge.classList.add('done');
+            statusMsg.textContent = 'Informacion cargada correctamente. Certificado de Acreditación listo para generar.';
+            statusMsg.classList.add('done-msg');
+            for (var f = 1; f <= 5; f++) {
+                var fd = document.querySelector('#step' + f + ' .paz-step-dot');
+                var fs = document.getElementById('step' + f);
+                if (fd) fd.className = 'paz-step-dot completed';
+                if (fs) fs.className = 'paz-step done-step';
+            }
+            setCentral('centralDC','done'); setCentral('centralMiDC','done');
+            setCentral('centralCifin','done'); setCentral('centralTU','done');
+            return;
+        }
+        percent++;
+        fill.style.width = percent + '%';
+        document.getElementById('pazPercent').textContent = percent + '%';
+        var thresholds = [0,20,40,55,68,78,86,92,97,100];
+        var msgIndex = 0;
+        for (var m = thresholds.length - 1; m >= 0; m--) { if (percent >= thresholds[m]) { msgIndex = m; break; } }
+        statusMsg.textContent = pazMessages[Math.min(msgIndex, pazMessages.length - 1)];
+        if (percent < 25) {
+            setCentral('centralDC','running','Consultando...'); setCentral('centralMiDC','wait','En espera...');
+            setCentral('centralCifin','wait','En espera...'); setCentral('centralTU','wait','En espera...');
+        } else if (percent < 50) {
+            setCentral('centralDC','done'); setCentral('centralMiDC','running','Consultando...');
+            setCentral('centralCifin','wait','En espera...'); setCentral('centralTU','wait','En espera...');
+        } else if (percent < 75) {
+            setCentral('centralDC','done'); setCentral('centralMiDC','done');
+            setCentral('centralCifin','running','Consultando...'); setCentral('centralTU','wait','En espera...');
+        } else if (percent < 95) {
+            setCentral('centralDC','done'); setCentral('centralMiDC','done');
+            setCentral('centralCifin','done'); setCentral('centralTU','running','Consultando...');
+        } else {
+            setCentral('centralDC','done'); setCentral('centralMiDC','done');
+            setCentral('centralCifin','done'); setCentral('centralTU','done');
+        }
+        var currentStep = Math.min(Math.max(Math.ceil(percent / 20), 1), 5);
+        for (var s = 1; s <= 5; s++) {
+            var d = document.querySelector('#step' + s + ' .paz-step-dot');
+            var e = document.getElementById('step' + s);
+            if (!d || !e) continue;
+            if (s < currentStep) { d.className = 'paz-step-dot completed'; e.className = 'paz-step done-step'; }
+            else if (s === currentStep) { d.className = 'paz-step-dot running'; e.className = 'paz-step active-step'; }
+            else { d.className = 'paz-step-dot'; e.className = 'paz-step'; }
+        }
+        var delay;
+        if (percent < 10)      delay = Math.floor(Math.random() * 500) + 2200;
+        else if (percent < 25) delay = Math.floor(Math.random() * 400) + 1800;
+        else if (percent < 50) delay = Math.floor(Math.random() * 600) + 2000;
+        else if (percent < 70) delay = Math.floor(Math.random() * 500) + 2500;
+        else if (percent < 85) delay = Math.floor(Math.random() * 700) + 2800;
+        else if (percent < 95) delay = Math.floor(Math.random() * 800) + 3000;
+        else                   delay = Math.floor(Math.random() * 1000) + 3500;
+        pazTimer = setTimeout(pazStep, delay);
+    }
+    pazStep();
+}
+
+function toggleDetails(id) { document.getElementById(id).classList.toggle('active'); }
+
+function handleDownload() {
+    alert('📄 Para descargar el PDF:\n\n1. Usa Ctrl+P (o Cmd+P en Mac)\n2. Selecciona "Guardar como PDF"\n3. Haz clic en Guardar\n\nReporte de: ' + currentUser.nombre + '\nScore: ' + currentUser.score);
+    window.print();
+}
+
+function handleLogout() {
+    if (pazTimer) { clearTimeout(pazTimer); pazTimer = null; }
+    if (currentUser) currentUser.loggedIn = false;
+    currentUser = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('btnLogout').classList.add('hidden');
+    document.getElementById('cedula').value = '';
+    document.getElementById('codigo').value = '';
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressPercent').textContent = '0%';
+}
+
+document.getElementById('cedula').addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('codigo').focus(); });
+document.getElementById('codigo').addEventListener('keypress', function(e) { if (e.key === 'Enter') handleLogin(); });
+
+// ===== USUARIOS REGISTRADOS DINÁMICAMENTE =====
+var registeredUsers = {};  // cédula -> { nombre, apellidos, correo, telefono, fechaNacimiento, password }
+
+// ===== NAVEGACIÓN ENTRE PANTALLAS =====
+var screens = ['loginScreen','registerScreen','forgotScreen'];
+function showScreen(id) {
+    screens.forEach(function(s) {
+        var el = document.getElementById(s);
+        if (el) el.classList.add('hidden');
+    });
+    document.getElementById(id).classList.remove('hidden');
+    // Reset forgot al abrir
+    if (id === 'forgotScreen') {
+        var cedulaEl = document.getElementById('forgot_cedula');
+        cedulaEl.value = '';
+        cedulaEl.disabled = false;
+        cedulaEl.style.borderColor = '';
+        document.getElementById('forgot_error').classList.add('hidden');
+        document.getElementById('forgot_newpass_wrap').classList.add('hidden');
+        document.getElementById('new_password').value = '';
+        document.getElementById('new_password2').value = '';
+        document.getElementById('btnForgotAction').textContent = 'Continuar';
+        forgotStep = 1; forgotCedula = '';
+    }
+}
+
+// ===== REGISTRO =====
+function handleRegister() {
+    var nombre    = document.getElementById('reg_nombre').value.trim();
+    var apellidos = document.getElementById('reg_apellidos').value.trim();
+    var cedula    = document.getElementById('reg_cedula').value.trim();
+    var fecha     = document.getElementById('reg_fecha').value;
+    var correo    = document.getElementById('reg_correo').value.trim();
+    var telefono  = document.getElementById('reg_telefono').value.trim();
+    var pass      = document.getElementById('reg_password').value;
+    var pass2     = document.getElementById('reg_password2').value;
+
+    if (!nombre || !apellidos || !cedula || !fecha || !correo || !telefono || !pass || !pass2) {
+        alert('⚠️ Por favor completa todos los campos.'); return;
+    }
+    if (pass !== pass2) { alert('⚠️ Las contraseñas no coinciden.'); return; }
+    if (pass.length < 4) { alert('⚠️ La contraseña debe tener al menos 4 caracteres.'); return; }
+
+    if (clientsDB[cedula] || registeredUsers[cedula]) {
+        alert('⚠️ Este número de cédula ya está registrado.\n\nSi olvidaste tu contraseña, usa "Cambiar contraseña".'); return;
+    }
+
+    registeredUsers[cedula] = { nombre: nombre, apellidos: apellidos, correo: correo, telefono: telefono, fechaNacimiento: fecha, password: pass };
+    clientsDB[cedula] = { codigo: pass, nombre: nombre + ' ' + apellidos, score: 897 };
+
+    alert('✅ ¡Cuenta creada exitosamente!\n\nYa puedes iniciar sesión con tu cédula y contraseña.');
+    ['reg_nombre','reg_apellidos','reg_cedula','reg_correo','reg_telefono','reg_password','reg_password2'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('reg_fecha').value = '';
+    showScreen('loginScreen');
+}
+
+// ===== CAMBIAR CONTRASEÑA (2 pasos: cédula → nueva contraseña) =====
+var forgotStep   = 1;
+var forgotCedula = '';
+
+function hideForgotError() {
+    document.getElementById('forgot_error').classList.add('hidden');
+}
+
+function handleForgot() {
+    if (forgotStep === 1) {
+        var cedula = document.getElementById('forgot_cedula').value.trim();
+        if (!cedula) { alert('Por favor ingresa tu número de cédula.'); return; }
+        if (!clientsDB[cedula] && !registeredUsers[cedula]) {
+            document.getElementById('forgot_error').classList.remove('hidden');
+            document.getElementById('forgot_cedula').style.borderColor = '#f87171';
+            return;
+        }
+        document.getElementById('forgot_error').classList.add('hidden');
+        document.getElementById('forgot_cedula').style.borderColor = '';
+        forgotCedula = cedula;
+        forgotStep = 2;
+        document.getElementById('forgot_newpass_wrap').classList.remove('hidden');
+        document.getElementById('forgot_cedula').disabled = true;
+        document.getElementById('btnForgotAction').textContent = 'Guardar nueva contraseña';
+    } else {
+        var pass  = document.getElementById('new_password').value;
+        var pass2 = document.getElementById('new_password2').value;
+        if (!pass || !pass2) { alert('Por favor completa ambos campos.'); return; }
+        if (pass !== pass2)  { alert('⚠️ Las contraseñas no coinciden.'); return; }
+        if (pass.length < 4) { alert('⚠️ La contraseña debe tener al menos 4 caracteres.'); return; }
+
+        if (clientsDB[forgotCedula])       clientsDB[forgotCedula].codigo = pass;
+        if (registeredUsers[forgotCedula]) registeredUsers[forgotCedula].password = pass;
+
+        alert('✅ ¡Contraseña actualizada correctamente!\n\nYa puedes iniciar sesión con tu nueva contraseña.');
+        document.getElementById('forgot_cedula').disabled = false;
+        document.getElementById('forgot_cedula').style.borderColor = '';
+        forgotCedula = ''; forgotStep = 1;
+        showScreen('loginScreen');
+    }
+}
+</script>
+</body>
+</html>
